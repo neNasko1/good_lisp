@@ -1,8 +1,8 @@
 # This Makefile provides a basic structure for an extensible build system
 
 # Compiler options
-CC := gcc-13
-CFLAGS := -Wall -Wextra -Werror
+CC := gcc
+CFLAGS := -Wall -Wextra -fsanitize=address -g
 
 LINK_FLAGS := -L/opt/homebrew/Cellar/libgccjit/13.2.0/lib
 INCL_FLAGS := -I/opt/homebrew/Cellar/libgccjit/13.2.0/include/
@@ -17,9 +17,6 @@ BINDIR := bin
 SRCS := $(wildcard $(SRCDIR)/*.c)
 OBJS := $(patsubst $(SRCDIR)/%.c, $(OBJDIR)/%.o, $(SRCS))
 
-# JSON generation tool
-BEAR := bear
-
 # Default target
 all: $(BINDIR)/good_lisp
 
@@ -31,7 +28,7 @@ $(BINDIR)/good_lisp: $(OBJS)
 # Rule to build object files
 $(OBJDIR)/%.o: $(SRCDIR)/%.c
 	@mkdir -p $(OBJDIR)
-	$(BEAR) -- $(CC) $(CFLAGS) -I$(INCDIR) $(INCL_FLAGS) -c $< -o $@
+	$(CC) $(CFLAGS) -I$(INCDIR) $(INCL_FLAGS) -c $< -o $@
 
 # Clean target
 clean:
