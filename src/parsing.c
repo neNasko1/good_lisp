@@ -98,6 +98,8 @@ struct any* parse_ast(struct file_state* fs) {
 void execute(FILE *fd) {
 	struct file_state *fs = file_state_init(fd);
 
+	struct vector_symbol_entry* ctx = create_vector_symbol_entry_default();
+
 	while(true) {
 		struct any* now = parse_ast(fs);
 
@@ -105,7 +107,7 @@ void execute(FILE *fd) {
 			break;
 		}
 
-		eval(now);
+		eval(now, ctx);
 	}
 }
 

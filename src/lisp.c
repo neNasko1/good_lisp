@@ -5,27 +5,7 @@
 #include <stdbool.h>
 
 #include "lisp.h"
-
-enum TYPE {
-	NIL,
-	INTEGER,
-	PAIR,
-	SYMBOL
-};
-
-struct any_pair {
-	struct any *car;
-	struct any *cdr;
-};
-
-struct any {
-	enum TYPE type;
-	union {
-		int64_t INTEGER_value;
-		struct any_pair PAIR_value;
-		const char *SYMBOL_value;
-	} data;
-};
+#include "builtin.h"
 
 MAKE_DEF(NIL) {
 	struct any* ret = malloc(sizeof(struct any));
@@ -55,6 +35,13 @@ MAKE_DEF(SYMBOL, const char *value) {
 	return ret;
 }
 
+MAKE_DEF(BUILTIN_FUNCTION, struct any* (*func)(struct any*)) {
+	struct any* ret = NIL_make();
+	ret->type = BUILTIN_FUNCTION;
+	ret->data.BUILTIN_FUNCTION_value = func;
+	return ret;
+}
+
 PRINT_DEF(NIL) {
 	printf("()");
 }
@@ -75,18 +62,33 @@ PRINT_DEF(SYMBOL) {
 	printf("%s", elem->data.SYMBOL_value);
 }
 
-struct any *car(const struct any *value) {
+PRINT_DEF(BUILTIN_FUNCTION) {
+	printf("<builtin-func>");
+}
+
+struct any* car(struct any *value) {
 	assert(value->type == PAIR);
 	return value->data.PAIR_value.car;
 }
 
-struct any *cdr(const struct any *value) {
+struct any* cdr(struct any *value) {
 	assert(value->type == PAIR);
 	return value->data.PAIR_value.cdr;
 }
 
 struct any *cons(struct any *car, struct any *cdr) {
 	return PAIR_make(car, cdr);
+}
+
+uint64_t length(struct any* list) {
+	uint64_t len = 0;
+
+	while(list->type != NIL) {
+		len ++;
+		list = cdr(list);
+	}
+
+	return len;
 }
 
 struct any *reverse(struct any* to_reverse) {
@@ -102,7 +104,7 @@ struct any *reverse(struct any* to_reverse) {
 	return ret;
 }
 
-void print(const struct any* value) {
+void print(struct any* value) {
 	#define SWITCH_CASE(TYPE)      \
 		case TYPE:                 \
 			TYPE ## _print(value); \
@@ -118,57 +120,90 @@ void print(const struct any* value) {
 	fflush(stdout);
 }
 
-struct any* resolve(struct any* value) {
+struct any* resolve(struct any* value, struct vector_symbol_entry *ctx) {
 	switch(value->type) {
 		case NIL:
 			return value;
 		case INTEGER:
 			return value;
 		case PAIR:
-			return cons(eval(car(value)), resolve(cdr(value)));
+			return cons(eval(car(value), ctx), resolve(cdr(value), ctx));
 		case SYMBOL:
 			return value;
 	}
 }
 
-struct any* eval(struct any* value) {
+struct any* eval(struct any* value, struct vector_symbol_entry *ctx) {
 	switch(value->type) {
 		case NIL:
 			return value;
 		case INTEGER:
 			return value;
-		case SYMBOL:
+		case BUILTIN_FUNCTION:
 			return value;
+		case SYMBOL:
+			return vector_symbol_entry_get(ctx, value->data.SYMBOL_value);
 		case PAIR:
 			break;
 	}
 
 	assert(value->type == PAIR);
 
+	value = resolve(value, ctx);
+
 	struct any* func = car(value);
 	struct any* params = cdr(value);
 
-	if(func->type != SYMBOL) {
-		return value;
-	}
-
-	assert(func->type == SYMBOL);
-
-	if(strcmp("print", func->data.SYMBOL_value) == 0) {
-		params = resolve(params);
-		printf(">>>");
-		while(params->type != NIL) {
-			printf(" ");
-			printf("[");
-			print(car(params));
-			printf("]");
-			params = cdr(params);
-		}
+	if(func->type != BUILTIN_FUNCTION) {
+		printf("Error trying to evaluate with something else than functions\n");
+		printf("Function evaluated to: ");
+		print(func);
 		printf("\n");
-		return NIL_make();
+		exit(-1);
 	}
 
-	return value;
+	assert(func->type == BUILTIN_FUNCTION);
+
+	return func->data.BUILTIN_FUNCTION_value(params);
 }
 
+struct vector_symbol_entry* create_vector_symbol_entry_default() {
+	struct vector_symbol_entry* ret = malloc(sizeof(struct vector_symbol_entry));
 
+	vector_symbol_entry_init(ret);
+
+	vector_symbol_entry_set(ret, "print", BUILTIN_FUNCTION_make(builtin_print));
+
+	return ret;
+}
+
+void vector_symbol_entry_set(
+	const struct vector_symbol_entry* table,
+	const char* name,
+	struct any *value
+) {
+	for(uint64_t i = 0; i < table->size; i ++) {
+		if(strcmp(name, table->elems[i].name) == 0) {
+			table->elems[i].value = value;
+			return;
+		}
+	}
+
+	symbol_entry to_push;
+	to_push.name = name;
+	to_push.value = value;
+	vector_symbol_entry_append(table, to_push);
+}
+
+struct any* vector_symbol_entry_get(
+	const struct vector_symbol_entry* table,
+	const char* name
+) {
+	for(uint64_t i = 0; i < table->size; i ++) {
+		if(strcmp(name, table->elems[i].name) == 0) {
+			return table->elems[i].value;
+		}
+	}
+
+	return NIL_make();
+}

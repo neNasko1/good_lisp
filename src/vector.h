@@ -12,7 +12,14 @@
 		uint64_t size;                                                  \
 		TYPE *elems;                                                    \
 	};                                                                  \
-	                                                                    \
+	void vector_##TYPE ##_init(struct vector_##TYPE* vec);              \
+	void vector_##TYPE ##_append(                                       \
+		struct vector_##TYPE* vec,                                      \
+		const TYPE new_value                                            \
+	);                                                                  \
+
+
+#define VECTOR_IMPL(TYPE)                                               \
 	void vector_##TYPE ##_init(struct vector_##TYPE* vec) {             \
 		vec->capacity = 1;                                              \
 		vec->size = 0;                                                  \
