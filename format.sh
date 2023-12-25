@@ -1,1 +1,1 @@
-clang-format src/* -i --style="{BasedOnStyle: llvm, IndentWidth: 4}"
+clang-format src/* -i --style="{BasedOnStyle: google, IndentWidth: 4}"

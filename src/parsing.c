@@ -42,10 +42,10 @@ bool match_character(struct file_state *fs, const char c) {
 }
 
 struct any *parse_ast(struct file_state *fs) {
-#define MATCH_OR_ERROR(chr)                                                    \
-    if (!match_character(fs, chr)) {                                           \
-        printf("Error in parsing for character %c", fs->curr);                 \
-        exit(-1);                                                              \
+#define MATCH_OR_ERROR(chr)                                    \
+    if (!match_character(fs, chr)) {                           \
+        printf("Error in parsing for character %c", fs->curr); \
+        exit(-1);                                              \
     }
 
     skip_whitespace(fs);

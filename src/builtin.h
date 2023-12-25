@@ -5,8 +5,8 @@
 
 #include "lisp.h"
 
-#define BUILTIN(FUNC)                                                          \
-    struct any *builtin_##FUNC(struct any *params,                             \
+#define BUILTIN(FUNC)                              \
+    struct any *builtin_##FUNC(struct any *params, \
                                struct vector_symbol_entry *ctx)
 
 #define ASSERT_LEN(PARAMS_COUNT) assert(length(params) == PARAMS_COUNT);
@@ -75,14 +75,14 @@ BUILTIN(eval) {
     struct any *value = car(params);
 
     switch (value->type) {
-    case SYMBOL:
-        return vector_symbol_entry_get(ctx, value->data.SYMBOL_value);
-    case NIL:
-    case INTEGER:
-    case BUILTIN_FUNCTION:
-        return value;
-    case PAIR:
-        break;
+        case SYMBOL:
+            return vector_symbol_entry_get(ctx, value->data.SYMBOL_value);
+        case NIL:
+        case INTEGER:
+        case BUILTIN_FUNCTION:
+            return value;
+        case PAIR:
+            break;
     }
 
     struct any *func = builtin_eval(cons(car(value), NIL_make()), ctx);

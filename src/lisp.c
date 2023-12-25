@@ -122,9 +122,9 @@ struct any *reverse(struct any *to_reverse) {
 }
 
 void print(struct any *value) {
-#define SWITCH_CASE(TYPE)                                                      \
-    case TYPE:                                                                 \
-        TYPE##_print(value);                                                   \
+#define SWITCH_CASE(TYPE)    \
+    case TYPE:               \
+        TYPE##_print(value); \
         break;
 
     switch (value->type) {
@@ -140,14 +140,14 @@ void print(struct any *value) {
 
 struct any *resolve(struct any *value, struct vector_symbol_entry *ctx) {
     switch (value->type) {
-    case PAIR:
-        return cons(eval(car(value), ctx), resolve(cdr(value), ctx));
-    case SYMBOL:
-        return vector_symbol_entry_get(ctx, value->data.SYMBOL_value);
-    case NIL:
-    case INTEGER:
-    case BUILTIN_FUNCTION:
-        return value;
+        case PAIR:
+            return cons(eval(car(value), ctx), resolve(cdr(value), ctx));
+        case SYMBOL:
+            return vector_symbol_entry_get(ctx, value->data.SYMBOL_value);
+        case NIL:
+        case INTEGER:
+        case BUILTIN_FUNCTION:
+            return value;
     }
 }
 

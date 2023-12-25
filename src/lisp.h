@@ -43,11 +43,11 @@ PRINT_DEF(BUILTIN_FUNCTION);
 
 void print(struct any *value);
 
-#define ASSERT_TYPE(value, TYPE)                                               \
-    if (value->type != TYPE) {                                                 \
-        printf("\nReal value is %d \n", value->type);                          \
-        print(value);                                                          \
-        assert(value->type == TYPE);                                           \
+#define ASSERT_TYPE(value, TYPE)                      \
+    if (value->type != TYPE) {                        \
+        printf("\nReal value is %d \n", value->type); \
+        print(value);                                 \
+        assert(value->type == TYPE);                  \
     }
 
 struct any *car(struct any *value);
