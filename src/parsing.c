@@ -41,7 +41,11 @@ bool match_character(struct file_state *fs, const char c) {
     return true;
 }
 
-struct any *parse_ast(struct file_state *fs) {
+typedef void *pointer;
+VECTOR_DEF(pointer);
+VECTOR_IMPL(pointer);
+
+struct any *parse_ast(struct file_state *fs, struct vector_pointer *free_list) {
 #define MATCH_OR_ERROR(chr)                                    \
     if (!match_character(fs, chr)) {                           \
         printf("Error in parsing for character %c", fs->curr); \
@@ -68,6 +72,8 @@ struct any *parse_ast(struct file_state *fs) {
         }
         vector_char_append(&ret, '\0');
 
+        vector_pointer_append(free_list, ret.elems);
+
         if (is_number) {
             return INTEGER_make(atoi(ret.elems));
         } else {
@@ -82,7 +88,7 @@ struct any *parse_ast(struct file_state *fs) {
 
     while (fs->curr != ')') {
         skip_whitespace(fs);
-        ret = PAIR_make(parse_ast(fs), ret);
+        ret = PAIR_make(parse_ast(fs, free_list), ret);
         skip_whitespace(fs);
     }
 
@@ -97,8 +103,11 @@ void execute(FILE *fd) {
 
     struct vector_symbol_entry *ctx = create_vector_symbol_entry_default();
 
+    struct vector_pointer *free_list = malloc(sizeof(struct vector_pointer));
+    vector_pointer_init(free_list);
+
     while (true) {
-        struct any *now = parse_ast(fs);
+        struct any *now = parse_ast(fs, free_list);
 
         if (now == NULL) {
             break;
@@ -106,6 +115,13 @@ void execute(FILE *fd) {
 
         eval(now, ctx);
     }
+
+    vector_symbol_entry_deinit(ctx);
+
+    for (size_t i = 0; i < free_list->size; i++) {
+        free(free_list->elems[i]);
+    }
+    vector_pointer_deinit(free_list);
 }
 
 #endif

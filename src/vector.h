@@ -5,14 +5,15 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define VECTOR_DEF(TYPE)                                   \
-    struct vector_##TYPE {                                 \
-        uint64_t capacity;                                 \
-        uint64_t size;                                     \
-        TYPE *elems;                                       \
-    };                                                     \
-    void vector_##TYPE##_init(struct vector_##TYPE *vec);  \
-    void vector_##TYPE##_append(struct vector_##TYPE *vec, \
+#define VECTOR_DEF(TYPE)                                    \
+    struct vector_##TYPE {                                  \
+        uint64_t capacity;                                  \
+        uint64_t size;                                      \
+        TYPE *elems;                                        \
+    };                                                      \
+    void vector_##TYPE##_init(struct vector_##TYPE *vec);   \
+    void vector_##TYPE##_deinit(struct vector_##TYPE *vec); \
+    void vector_##TYPE##_append(struct vector_##TYPE *vec,  \
                                 const TYPE new_value);
 
 #define VECTOR_IMPL(TYPE)                                                   \
@@ -20,6 +21,10 @@
         vec->capacity = 1;                                                  \
         vec->size = 0;                                                      \
         vec->elems = malloc(sizeof(TYPE));                                  \
+    }                                                                       \
+                                                                            \
+    void vector_##TYPE##_deinit(struct vector_##TYPE *vec) {                \
+        free(vec->elems);                                                   \
     }                                                                       \
                                                                             \
     void vector_##TYPE##_append(struct vector_##TYPE *vec,                  \

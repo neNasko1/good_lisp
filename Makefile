@@ -1,8 +1,8 @@
 # This Makefile provides a basic structure for an extensible build system
 
 # Compiler options
-CC := gcc
-CFLAGS := -Wall -Wextra -fsanitize=address -g
+CC := clang
+CFLAGS := -Wall -Wextra -g
 
 LINK_FLAGS := -L/opt/homebrew/Cellar/libgccjit/13.2.0/lib
 INCL_FLAGS := -I/opt/homebrew/Cellar/libgccjit/13.2.0/include/
