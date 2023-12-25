@@ -41,9 +41,8 @@ bool match_character(struct file_state *fs, const char c) {
     return true;
 }
 
-typedef void *pointer;
-VECTOR_DEF(pointer);
-VECTOR_IMPL(pointer);
+VECTOR_DEF(void *, vector_pointer);
+VECTOR_IMPL(void *, vector_pointer);
 
 struct any *parse_ast(struct file_state *fs, struct vector_pointer *free_list) {
 #define MATCH_OR_ERROR(chr)                                    \
@@ -58,8 +57,8 @@ struct any *parse_ast(struct file_state *fs, struct vector_pointer *free_list) {
     }
 
     if (fs->curr != '(') {
-        struct vector_char ret;
-        vector_char_init(&ret);
+        struct string ret;
+        string_init(&ret);
 
         bool is_number = true;
 
@@ -67,10 +66,10 @@ struct any *parse_ast(struct file_state *fs, struct vector_pointer *free_list) {
             if (fs->curr < '0' || fs->curr > '9') {
                 is_number = false;
             }
-            vector_char_append(&ret, fs->curr);
+            string_append(&ret, fs->curr);
             file_state_move(fs);
         }
-        vector_char_append(&ret, '\0');
+        string_append(&ret, '\0');
 
         vector_pointer_append(free_list, ret.elems);
 

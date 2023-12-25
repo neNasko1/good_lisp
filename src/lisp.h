@@ -1,12 +1,18 @@
 #ifndef LISP_H
 #define LISP_H
 
+#include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 
 #include "vector.h"
 
 struct vector_symbol_entry;
+struct vector_any;
+
+struct gc_header {
+    uint64_t last_seen;
+};
 
 enum TYPE { NIL, INTEGER, PAIR, SYMBOL, BUILTIN_FUNCTION };
 
@@ -16,6 +22,7 @@ struct any_pair {
 };
 
 struct any {
+    struct gc_header mem_info;
     enum TYPE type;
     union {
         int64_t INTEGER_value;
@@ -40,7 +47,6 @@ PRINT_DEF(INTEGER);
 PRINT_DEF(PAIR);
 PRINT_DEF(SYMBOL);
 PRINT_DEF(BUILTIN_FUNCTION);
-
 void print(struct any *value);
 
 #define ASSERT_TYPE(value, TYPE)                      \
@@ -61,7 +67,7 @@ typedef struct {
     struct any *value;
 } symbol_entry;
 
-VECTOR_DEF(symbol_entry);
+VECTOR_DEF(symbol_entry, vector_symbol_entry);
 
 struct vector_symbol_entry *create_vector_symbol_entry_default();
 

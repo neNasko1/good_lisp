@@ -165,6 +165,7 @@ struct vector_symbol_entry *create_vector_symbol_entry_default() {
     vector_symbol_entry_set(ret, "+", BUILTIN_FUNCTION_make(builtin_sum));
     vector_symbol_entry_set(ret, "eval", BUILTIN_FUNCTION_make(builtin_eval));
     vector_symbol_entry_set(ret, "quote", BUILTIN_FUNCTION_make(builtin_quote));
+    vector_symbol_entry_set(ret, "set", BUILTIN_FUNCTION_make(builtin_set));
 
     return ret;
 }

@@ -45,6 +45,7 @@ BUILTIN(reverse) {
 
 BUILTIN(print) {
     RESOLVE_PARAMS();
+
     printf(">>>");
     while (params->type != NIL) {
         printf(" ");
@@ -52,6 +53,7 @@ BUILTIN(print) {
         params = cdr(params);
     }
     printf("\n");
+
     return NIL_make();
 }
 
@@ -105,6 +107,18 @@ BUILTIN(quote) {
     ASSERT_LEN(1);
 
     return car(params);
+}
+
+BUILTIN(set) {
+    ASSERT_LEN(2);
+
+    struct any *name = car(params);
+    struct any *value = builtin_eval(cdr(params), ctx);
+
+    ASSERT_TYPE(name, SYMBOL);
+    vector_symbol_entry_set(ctx, name->data.SYMBOL_value, value);
+
+    return NIL_make();
 }
 
 #endif

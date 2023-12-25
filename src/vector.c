@@ -2,5 +2,5 @@
 
 #include "lisp.h"
 
-VECTOR_IMPL(char);
-VECTOR_IMPL(symbol_entry);
+VECTOR_IMPL(char, string);
+VECTOR_IMPL(symbol_entry, vector_symbol_entry);
