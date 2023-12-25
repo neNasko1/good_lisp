@@ -6,6 +6,8 @@
 
 #include "vector.h"
 
+struct vector_symbol_entry;
+
 enum TYPE {
 	NIL,
 	INTEGER,
@@ -25,7 +27,7 @@ struct any {
 		int64_t INTEGER_value;
 		struct any_pair PAIR_value;
 		const char *SYMBOL_value;
-		struct any* (*BUILTIN_FUNCTION_value)(struct any*);
+		struct any* (*BUILTIN_FUNCTION_value)(struct any*, struct vector_symbol_entry *);
 	} data;
 };
 
@@ -44,6 +46,14 @@ PRINT_DEF(SYMBOL);
 PRINT_DEF(BUILTIN_FUNCTION);
 
 void print(struct any* value);
+
+#define ASSERT_TYPE(value, TYPE) \
+	if(value->type != TYPE) { \
+		printf("\nReal value is %d \n", value->type); \
+		print(value); \
+		assert(value->type == TYPE); \
+	}
+
 
 struct any *car(struct any *value);
 struct any *cdr(struct any *value);

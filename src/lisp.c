@@ -67,12 +67,12 @@ PRINT_DEF(BUILTIN_FUNCTION) {
 }
 
 struct any* car(struct any *value) {
-	assert(value->type == PAIR);
+	ASSERT_TYPE(value, PAIR);
 	return value->data.PAIR_value.car;
 }
 
 struct any* cdr(struct any *value) {
-	assert(value->type == PAIR);
+	ASSERT_TYPE(value, PAIR);
 	return value->data.PAIR_value.cdr;
 }
 
@@ -122,49 +122,31 @@ void print(struct any* value) {
 
 struct any* resolve(struct any* value, struct vector_symbol_entry *ctx) {
 	switch(value->type) {
-		case NIL:
-			return value;
-		case INTEGER:
-			return value;
 		case PAIR:
-			return cons(eval(car(value), ctx), resolve(cdr(value), ctx));
+			return cons(
+				eval(
+					car(value),
+					ctx
+				),
+				resolve(cdr(value), ctx)
+			);
 		case SYMBOL:
+			return vector_symbol_entry_get(ctx, value->data.SYMBOL_value);
+		case NIL:
+		case INTEGER:
+		case BUILTIN_FUNCTION:
 			return value;
 	}
 }
 
 struct any* eval(struct any* value, struct vector_symbol_entry *ctx) {
-	switch(value->type) {
-		case NIL:
-			return value;
-		case INTEGER:
-			return value;
-		case BUILTIN_FUNCTION:
-			return value;
-		case SYMBOL:
-			return vector_symbol_entry_get(ctx, value->data.SYMBOL_value);
-		case PAIR:
-			break;
-	}
-
-	assert(value->type == PAIR);
-
-	value = resolve(value, ctx);
-
-	struct any* func = car(value);
-	struct any* params = cdr(value);
-
-	if(func->type != BUILTIN_FUNCTION) {
-		printf("Error trying to evaluate with something else than functions\n");
-		printf("Function evaluated to: ");
-		print(func);
-		printf("\n");
-		exit(-1);
-	}
-
-	assert(func->type == BUILTIN_FUNCTION);
-
-	return func->data.BUILTIN_FUNCTION_value(params);
+	return builtin_eval(
+		cons(
+			value,
+			NIL_make()
+		),
+		ctx
+	);
 }
 
 struct vector_symbol_entry* create_vector_symbol_entry_default() {
@@ -173,6 +155,9 @@ struct vector_symbol_entry* create_vector_symbol_entry_default() {
 	vector_symbol_entry_init(ret);
 
 	vector_symbol_entry_set(ret, "print", BUILTIN_FUNCTION_make(builtin_print));
+	vector_symbol_entry_set(ret, "+", BUILTIN_FUNCTION_make(builtin_sum));
+	vector_symbol_entry_set(ret, "eval", BUILTIN_FUNCTION_make(builtin_eval));
+	vector_symbol_entry_set(ret, "quote", BUILTIN_FUNCTION_make(builtin_quote));
 
 	return ret;
 }
