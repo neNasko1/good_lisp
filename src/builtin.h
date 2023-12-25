@@ -52,9 +52,7 @@ BUILTIN(print) {
 	printf(">>>");
 	while(params->type != NIL) {
 		printf(" ");
-		printf("[");
 		print(car(params));
-		printf("]");
 		params = cdr(params);
 	}
 	printf("\n");

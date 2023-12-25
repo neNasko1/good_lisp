@@ -36,7 +36,7 @@ MAKE_DEF(NIL);
 MAKE_DEF(INTEGER, const int64_t value);
 MAKE_DEF(PAIR, struct any* car, struct any* cdr);
 MAKE_DEF(SYMBOL, const char *value);
-MAKE_DEF(BUILTIN_FUNCTION, struct any* (*func)(struct any*));
+MAKE_DEF(BUILTIN_FUNCTION, struct any* (*func)(struct any*, struct vector_symbol_entry *));
 
 #define PRINT_DEF(TYP) void TYP ## _print(struct any* elem)
 PRINT_DEF(NIL);
@@ -72,13 +72,13 @@ VECTOR_DEF(symbol_entry);
 struct vector_symbol_entry* create_vector_symbol_entry_default();
 
 void vector_symbol_entry_set(
-	const struct vector_symbol_entry* table,
+	struct vector_symbol_entry* table,
 	const char* name,
 	struct any *value
 );
 
 struct any* vector_symbol_entry_get(
-	const struct vector_symbol_entry* table,
+	struct vector_symbol_entry* table,
 	const char* name
 );
 

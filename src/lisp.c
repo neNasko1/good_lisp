@@ -35,7 +35,7 @@ MAKE_DEF(SYMBOL, const char *value) {
 	return ret;
 }
 
-MAKE_DEF(BUILTIN_FUNCTION, struct any* (*func)(struct any*)) {
+MAKE_DEF(BUILTIN_FUNCTION, struct any* (*func)(struct any*, struct vector_symbol_entry *)) {
 	struct any* ret = NIL_make();
 	ret->type = BUILTIN_FUNCTION;
 	ret->data.BUILTIN_FUNCTION_value = func;
@@ -50,12 +50,31 @@ PRINT_DEF(INTEGER) {
 	printf("%lld", elem->data.INTEGER_value);
 }
 
+bool is_list(struct any* value) {
+	if(value->type == NIL) { return true; }
+	if(value->type == PAIR) { return is_list(cdr(value)); }
+	return false;
+}
+
 PRINT_DEF(PAIR) {
-	printf("(");
-	print(car(elem));
-	printf(", ");
-	print(cdr(elem));
-	printf(")");
+	if(is_list(elem)) {
+		printf("(");
+		print(car(elem));
+
+		struct any *curr = cdr(elem);
+		while(curr->type != NIL) {
+			printf(" ");
+			print(car(curr));
+			curr = cdr(curr);
+		}
+		printf(")");
+	} else {
+		printf("(");
+		print(car(elem));
+		printf(", ");
+		print(cdr(elem));
+		printf(")");
+	}
 }
 
 PRINT_DEF(SYMBOL) {
@@ -115,6 +134,7 @@ void print(struct any* value) {
 		SWITCH_CASE(INTEGER);
 		SWITCH_CASE(PAIR);
 		SWITCH_CASE(SYMBOL);
+		SWITCH_CASE(BUILTIN_FUNCTION);
 	}
 
 	fflush(stdout);
@@ -163,7 +183,7 @@ struct vector_symbol_entry* create_vector_symbol_entry_default() {
 }
 
 void vector_symbol_entry_set(
-	const struct vector_symbol_entry* table,
+	struct vector_symbol_entry* table,
 	const char* name,
 	struct any *value
 ) {
@@ -181,7 +201,7 @@ void vector_symbol_entry_set(
 }
 
 struct any* vector_symbol_entry_get(
-	const struct vector_symbol_entry* table,
+	struct vector_symbol_entry* table,
 	const char* name
 ) {
 	for(uint64_t i = 0; i < table->size; i ++) {
